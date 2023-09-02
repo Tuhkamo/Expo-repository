@@ -4,44 +4,32 @@ import { StyleSheet, View, Text, Button, TextInput, FlatList } from 'react-nativ
 
 export default function App() {
   const [text1, setText1] = useState('');
-  const [text2, setText2] = useState('');
-  const [result, setResult] = useState('Result: ');
-  const [history, setHistory] = useState(['History']);
+  const [text2, setText2] = useState('Shopping List');
+  const [history, setHistory] = useState(['']);
 
   const add = () => {
-    const operationResult = parseFloat(text1) + parseFloat(text2);
-    const operation = `${text1} + ${text2} = ${operationResult}`;
-    setResult('Result: ' + operationResult);
+    const operation = `${text1}`;
     setHistory([...history, operation]);
   };
 
-  const subtract = () => {
-    const operationResult = parseFloat(text1) - parseFloat(text2);
-    const operation = `${text1} - ${text2} = ${operationResult}`;
-    setResult('Result: ' + operationResult);
-    setHistory([...history, operation]);
+  const clear = () => {
+    setHistory([]);
   };
 
   return (
     <View style={styles.container}>
-      <Text>{result}</Text>
       <TextInput
         style={styles.input}
         onChangeText={(text) => setText1(text)}
         value={text1}
         keyboardType="numeric"
       />
-      <TextInput
-        style={styles.input}
-        onChangeText={(text) => setText2(text)}
-        value={text2}
-        keyboardType="numeric"
-      />
       <View style={styles.buttonGroup}>
-        <Button onPress={add} title="+" />
+        <Button onPress={add} title="Add" />
         <View style={styles.space}/>
-        <Button onPress={subtract} title="-" />
+        <Button onPress={clear} title="Clear" />
       </View>
+      <Text style={styles.blue}>{text2}</Text>
         <FlatList 
           data={history}
           renderItem={({ item }) => <Text>{item}</Text>}
@@ -74,4 +62,8 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
   },
+  blue: {
+    color: 'blue',
+    fontWeight: 'bold',
+  }
 });
