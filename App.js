@@ -1,18 +1,25 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Button, TextInput } from 'react-native';
+import { StyleSheet, View, Text, Button, TextInput, FlatList } from 'react-native';
 
 export default function App() {
   const [text1, setText1] = useState('');
   const [text2, setText2] = useState('');
-  const [result, setResult] = useState('');
+  const [result, setResult] = useState('Result: ');
+  const [history, setHistory] = useState(['History']);
 
   const add = () => {
-    setResult('Result: ' + (parseFloat(text1) + parseFloat(text2)));
+    const operationResult = parseFloat(text1) + parseFloat(text2);
+    const operation = `${text1} + ${text2} = ${operationResult}`;
+    setResult('Result: ' + operationResult);
+    setHistory([...history, operation]);
   };
 
   const subtract = () => {
-    setResult('Result: ' + (parseFloat(text1) - parseFloat(text2)));
+    const operationResult = parseFloat(text1) - parseFloat(text2);
+    const operation = `${text1} - ${text2} = ${operationResult}`;
+    setResult('Result: ' + operationResult);
+    setHistory([...history, operation]);
   };
 
   return (
@@ -35,6 +42,11 @@ export default function App() {
         <View style={styles.space}/>
         <Button onPress={subtract} title="-" />
       </View>
+        <FlatList 
+          data={history}
+          renderItem={({ item }) => <Text>{item}</Text>}
+          keyExtractor={(item, index) => index.toString()}
+        />
       <StatusBar style="auto" />
     </View>
   );
@@ -43,20 +55,23 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: 50,
     backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   input: {
+    marginBottom: 5,
     width: 200,
     borderColor: 'gray',
-    borderWidth: 1,
+    borderWidth: 1
   },
   buttonGroup: {
     flexDirection: 'row',
+    marginBottom: 5,
   },
   space: {
     width: 20,
     height: 20,
-  }
+  },
 });
