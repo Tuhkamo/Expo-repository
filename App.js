@@ -1,48 +1,63 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
-import { Card, Title } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button, Picker, StyleSheet } from 'react-native';
 
-const API_KEY = '1';
+const API_KEY = 'xcXDFrAh7TPb9jfnTN9Q4KcvfQO1zNuC';
+const API_URL = `https://api.apilayer.com/exchangerates_data/latest?apikey=${API_KEY}`;
 
 export default function App() {
-  const [query, setQuery] = useState('');
-  const [recipes, setRecipes] = useState([]);
+  const [amount, setAmount] = useState('');
+  const [euros, setEuros] = useState('');
+  const [currencyCode, setCurrencyCode] = useState('USD');
+  const [error, setError] = useState('');
+  const [currencyList, setCurrencyList] = useState({});
 
-  const searchRecipes = async () => {
+  useEffect(() => {
+    fetch(API_URL)
+      .then((response) => response.json())
+      .then((data) => {
+        setCurrencyList(data.rates);
+      })
+      .catch((error) => {
+        console.error('Error fetching exchange rates:', error);
+      });
+  }, []);
+
+  const convertToEuros = () => {
     try {
-      const response = await fetch(`https://www.themealdb.com/api/json/v1/${API_KEY}/search.php?s=${query}`);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+      setError('');
+      if (!currencyCode || !amount) {
+        throw new Error('Please enter a currency code and an amount');
       }
-      const data = await response.json();
-      setRecipes(data.meals);
+      const rate = currencyList[currencyCode];
+      const convertedEuros = (parseFloat(amount) / rate).toFixed(2);
+      setEuros(convertedEuros);
     } catch (error) {
-      console.error('Error fetching recipes:', error);
+      setError(error.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Recipe Search</Text>
-      <TextInput
-        placeholder="Enter recipe name..."
-        style={styles.input}
-        onChangeText={(text) => setQuery(text)}
-        value={query}
-      />
-      <Button title="Search" onPress={searchRecipes} />
-      <FlatList
-        data={recipes}
-        keyExtractor={(item) => item.idMeal}
-        renderItem={({ item }) => (
-          <Card style={styles.recipeContainer}>
-            <Card.Cover source={{ uri: `${item.strMealThumb}/preview` }} resizeMode="contain" style={styles.image} />
-            <Card.Content>
-              <Title>{item.strMeal}</Title>
-            </Card.Content>
-          </Card>
-        )}
-      />
+      <Text style={styles.header}>Currency to Euros Converter</Text>
+        <TextInput
+          placeholder="Enter amount"
+          style={styles.input}
+          onChangeText={(text) => setAmount(text)}
+          value={amount}
+          keyboardType="numeric"
+        />
+        <Picker
+          selectedValue={currencyCode}
+          onValueChange={(itemValue) => setCurrencyCode(itemValue)}
+          style={styles.picker}
+        >
+          {Object.keys(currencyList).map((code) => (
+            <Picker.Item key={code} label={code} value={code} />
+          ))}
+        </Picker>
+        <Button title="Convert" onPress={convertToEuros} />
+        {euros !== '' && <Text style={styles.result}>{euros} €</Text>}
+        {error !== '' && <Text style={styles.error}>{error}</Text>}
     </View>
   );
 }
@@ -57,7 +72,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
-    textAlign: 'center',
   },
   input: {
     height: 40,
@@ -66,10 +80,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingLeft: 8,
   },
-  recipeContainer: {
-    marginVertical: 8,
+  picker: {
+    height: 40,
+    marginBottom: 16,
   },
-  image: {
-    aspectRatio: 1,
+  result: {
+    fontSize: 18,
+    marginTop: 16,
+  },
+  error: {
+    color: 'red',
+    marginTop: 16,
   },
 });
